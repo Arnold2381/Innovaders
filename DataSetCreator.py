@@ -2,28 +2,22 @@ import imp
 imp.find_module("cv2")
 import cv2
 import numpy as np
-from PIL import Image
-import os
-recognizer = cv2.createLBPHFaceRecognizer()
-detector= cv2.CascadeClassifier("haarcascade_frontalface_alt2.xml");
-
-def getImagesAndLabels(path):
-    imagePaths=[os.path.join(path,f) for f in os.listdir(path)] 
-    faceSamples=[]
-    Ids=[]
-    for imagePath in imagePaths:
-        pilImage=Image.open(imagePath).convert('L')
-        imageNp=np.array(pilImage,'uint8')
-        Id=int(os.path.split(imagePath)[1].split(".")[1])
-        faces=detector.detectMultiScale(imageNp)
-        for (x,y,w,h) in faces:
-            faceSamples.append(imageNp[y:y+h,x:x+w])
-            Ids.append(Id)
-    return faceSamples,Ids
-
-
-faces,Ids = getImagesAndLabels('dataSet')
-recognizer.train(faces, np.array(Ids))
-print(len(Ids))
-print("Training Complete")
-recognizer.save('trainer/trainer.yml')
+faceDetect = cv2.CascadeClassifier("haarcascade_frontalface_alt2.xml")
+cam = cv2.VideoCapture(0)
+i=0
+cv2.waitKey(2)
+while True:
+    ret,img=cam.read()
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    faces = faceDetect.detectMultiScale(gray,1.5,5)
+    for (x,y,w,h) in faces:
+         i+=1
+         cv2.imwrite("dataSet/User.1"+"."+str(i)+".jpg",img)
+         cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+         #cv2.waitKey(10)
+    cv2.imshow("Capturing",img)
+    cv2.waitKey(1)
+    if i >= 250:
+         break
+cam.release()
+cv2.destroyAllWindows()
